@@ -65,7 +65,7 @@ class Example(QWidget):
         self.pbar.setValue(0)
 
         self.setGeometry(100, 100, 400, 500)
-        self.setWindowTitle('CP2112 Eeprom prog')
+        self.setWindowTitle('CP2112 Eeprom prog 0.1 alfa')
         self.show()
 #Find i2c line cp2112
     def find_i2c_line(self):
@@ -104,9 +104,14 @@ class Example(QWidget):
             addr = 0x00
         return addr
 
+
     def c1(self):
         print("!!!")
-
+        val = self.line1.text()
+        print(val)
+        val2 = self.line2.text()
+        print(val2)
+        print(file)
     def c2(self):
         print("!!!")
 
@@ -120,8 +125,8 @@ class Example(QWidget):
         print("!!!")
 
     def c6(self):
+        global file
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
-
         if file:
             print(file)
 
@@ -165,10 +170,10 @@ if __name__ == '__main__':
 #print("end")
 
 # Открываем на чтение бинарный файл
-file = open("HMB-GD1-COEP540.fru.bin", "rb")
+#file = open("HMB-GD1-COEP540.fru.bin", "rb")
 # Считываем в список первые 5 элементов
-number = list(file.read(32768))
+#number = list(file.read(32768))
 # Выводим список
-print(number)
+#print(number)
 # Закрываем файл
-file.close()
+#file.close()
