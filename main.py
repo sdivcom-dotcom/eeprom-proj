@@ -10,7 +10,10 @@ from PyQt5.QtWidgets import (QFrame, QApplication, QProgressBar, QMessageBox, QT
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
 
-command_find_i2c_line  = ""
+command_lsusb = "lsusb | grep 'Silicon Labs CP2112 HID I2C Bridge'"
+command_find_i2c_line  = "i2cdetect -l | grep 'CP2112 SMBus Bridge'"
+command_find_addr = "i2cdetect -y "
+command_find_addr_50 = " | grep '50 -- '"
 
 
 class Example(QWidget):
@@ -61,59 +64,95 @@ class Example(QWidget):
         self.nameLabel2.move(10, 75)
 
         self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(50, 360, 200, 100)
+        self.pbar.setGeometry(50, 380, 200, 32)
         self.pbar.setValue(0)
 
         self.setGeometry(100, 100, 400, 500)
         self.setWindowTitle('CP2112 Eeprom prog 0.1 alfa')
         self.show()
-#Find i2c line cp2112
+
+    def lsusb_find(self):
+        val = os.system(command_lsusb)
+        if val == 0:
+            value = 1
+        else:
+            value = 0
+        return value
+
+    # Find i2c line cp2112
     def find_i2c_line(self):
-        os.system(command_find_i2c_line)
-        val = subprocess.check_output(command_find_i2c_line, shell=True)
-        print(val)
-        return val.decode().strip()
+        val = os.system(command_find_i2c_line)
+        if val == 0:
+            value = subprocess.check_output(command_find_i2c_line, shell=True)
+            value = (value[4:6])
+        else:
+            value = 0
+        return value
 
-#Find address chip
+    # Find address chip
     def find_address(self):
-        bus_find = self.find_i2c_line
-        bus = smbus.SMBus(bus_find)
-        val = bus.write_quick(0x50)
-        if val == 0:
-            addr = 0x50
-            print(addr)
-        else:
-            addr = 0x00
-        val = bus.write_quick(0x51)
-        if val == 0:
-            addr = 0x51
-            print(addr)
-        else:
-            addr = 0x00
-        val = bus.write_quick(0x52)
-        if val == 0:
-            addr = 0x52
-            print(addr)
-        else:
-            addr = 0x00
-        val = bus.write_quick(0x53)
-        if val == 0:
-            addr = 0x53
-            print(addr)
-        else:
-            addr = 0x00
-        return addr
+        bus_find = self.find_i2c_line()
+        bus_find = str(bus_find, encoding="utf-8")
+        command_find_address = command_find_addr + bus_find
+        os.system(command_find_address)
+        val = subprocess.check_output(command_find_address, shell=True)
+        value = str(val, encoding="utf-8")
 
+        index1 = value.find("51")
+        index2 = value.find("52")
+        index3 = value.find("53")
+
+        if index1 >= 10:
+            address = 51
+            print(address)
+
+        elif index2 >= 10:
+            address = 52
+            print(address)
+
+        elif index3 >= 10:
+            address = 53
+            print(address)
+        else:
+            address = 00
+        return address
+
+    def find_50_address(self):
+        bus_find = self.find_i2c_line()
+        bus_find_50 = str(bus_find, encoding="utf-8")
+        command_find_50_addr = command_find_addr + bus_find_50 + command_find_addr_50
+        val = os.system(command_find_50_addr)
+        if val == 0:
+            value = subprocess.check_output(command_find_50_addr, shell=True)
+            address = 50
+        else:
+            address = 00
+        return address
 
     def c1(self):
-        print("!!!")
+        value = self.lsusb_find()
+        if value == 1:
+            val = self.find_address()
+            valu = self.find_50_address()
+            if val <= 50:
+                self.pbar.setValue(0)
+            else:
+                self.pbar.setValue(100)
+            if valu <= 49:
+                self.pbar.setValue(0)
+            else:
+                self.pbar.setValue(100)
+        else:
+            print("Chip not found")
+            self.pbar.setValue(0)
+
+    def c2(self):
         val = self.line1.text()
         print(val)
         val2 = self.line2.text()
         print(val2)
         print(file)
-    def c2(self):
-        print("!!!")
+
 
     def c3(self):
         print("!!!")
@@ -138,42 +177,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#bus = smbus.SMBus(16)  # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-#Dev_Addr = 0x50  # 7 bit address (will be left shifted to add the read write bit)
-
-#data = 0xA1
-#address = 0x00
-
-#H_Byte = 0x00
-#L_Byte = 0x00
-
-#min_range = 0
-#max_range = 128
-
-# Write Operation
-
-#for x in range(min_range, max_range):
- #   L_Byte_Data = [address, data]
-    #bus.write_i2c_block_data(Dev_Addr, H_Byte, L_Byte_Data)
-    #print(address)
-    #address = address + 1
-    #time.sleep(0.01)
-
-# Read Operation
-#bus.write_i2c_block_data(Dev_Addr, H_Byte, [L_Byte])
-#for i in range(min_range, max_range):
-    #value = bus.read_byte(Dev_Addr)
-    #print(value)
-    #time.sleep(0.01)
-
-#print("end")
-
-# Открываем на чтение бинарный файл
-#file = open("HMB-GD1-COEP540.fru.bin", "rb")
-# Считываем в список первые 5 элементов
-#number = list(file.read(32768))
-# Выводим список
-#print(number)
-# Закрываем файл
-#file.close()
