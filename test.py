@@ -30,7 +30,7 @@ for y in range(0, val):
     #str(number)
     number = (number[min:max])
     print(number)
-    list(map(int, number))
+    #list(map(int, number))
     s = [str(integer) for integer in number]
     a_string = "".join(s)
     res = int(a_string)

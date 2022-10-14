@@ -1,10 +1,9 @@
 import smbus
-import time
 import os
 import subprocess
 import sys
 import time
-from datetime import datetime
+import datetime
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QFrame, QApplication, QProgressBar, QMessageBox, QTextBrowser, QFileDialog)
 from PyQt5.QtWidgets import QPushButton
@@ -14,7 +13,7 @@ command_lsusb = "lsusb | grep 'Silicon Labs CP2112 HID I2C Bridge'"
 command_find_i2c_line  = "i2cdetect -l | grep 'CP2112 SMBus Bridge'"
 command_find_addr = "i2cdetect -y "
 command_find_addr_50 = " | grep '50 -- '"
-
+command_uptime = "cat /proc/uptime"
 data_00 = 0x00
 
 class Example(QWidget):
@@ -211,7 +210,6 @@ class Example(QWidget):
 
 #Read chip
     def c4(self):
-        print("!!!")
         val = self.line2.text()
         res = int(val)
         bus_line = self.find_i2c_line()
@@ -225,13 +223,26 @@ class Example(QWidget):
             bus_addr = self.find_address()
             bus_addr_int = int(bus_addr)
 
+        os.system(command_uptime)
+        value = subprocess.check_output(command_uptime, shell=True)
+        value = str(value, encoding="utf-8")
+        namefile = value + ".txt"
         H_Byte = 0x00
         L_Byte = 0x00
         bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
+        binary_file = open(namefile, "w")
+        print(namefile)
         for i in range(0, res):
-            value = bus.read_byte(bus_addr_int)
-            print(value)
+            read = bus.read_byte(bus_addr_int)
+            print(read)
+            read = str(read)
+            binary_file.write(read)
             time.sleep(0.01)
+        binary_file.close()
+        print("end")
+        print(namefile)
+        self.pbar.setValue(100)
+
 
     #Verify chip
     def c5(self):
