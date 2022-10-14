@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 import time
-import datetime
+from itertools import zip_longest
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QFrame, QApplication, QProgressBar, QMessageBox, QTextBrowser, QFileDialog)
 from PyQt5.QtWidgets import QPushButton
@@ -48,7 +48,7 @@ class Example(QWidget):
         b4.clicked.connect(self.c4)
         b5.clicked.connect(self.c5)
         b6.clicked.connect(self.c6)
-        b6.clicked.connect(self.c7)
+        b7.clicked.connect(self.c7)
 
         self.nameLabel1 = QLabel(self)
         self.nameLabel1.setText('Model chip:')
@@ -173,11 +173,23 @@ class Example(QWidget):
 
 #Prog chip
     def c2(self):
-        val = self.line1.text()
-        print(val)
-        val2 = self.line2.text()
-        print(val2)
+        val = self.line2.text()
+        res = int(val)
+        bus_line = self.find_i2c_line()
+        bus_line_int = int(bus_line)
+        bus = smbus.SMBus(bus_line_int)
+        val = self.count_addr()
+
+        if val == 2:
+            bus_addr_int = 0x50
+        if val == 1:
+            bus_addr = self.find_address()
+            bus_addr_int = int(bus_addr)
+
+        H_Byte = 0x00
+        L_Byte = 0x00
         print(file)
+
 
 #Erase chip
     def c3(self):
@@ -223,15 +235,10 @@ class Example(QWidget):
             bus_addr = self.find_address()
             bus_addr_int = int(bus_addr)
 
-        os.system(command_uptime)
-        value = subprocess.check_output(command_uptime, shell=True)
-        value = str(value, encoding="utf-8")
-        namefile = value + ".txt"
         H_Byte = 0x00
         L_Byte = 0x00
         bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
-        binary_file = open(namefile, "w")
-        print(namefile)
+        binary_file = open("image.txt", "w")
         for i in range(0, res):
             read = bus.read_byte(bus_addr_int)
             print(read)
@@ -240,13 +247,43 @@ class Example(QWidget):
             time.sleep(0.01)
         binary_file.close()
         print("end")
-        print(namefile)
         self.pbar.setValue(100)
 
 
     #Verify chip
     def c5(self):
-        print("!!!")
+        val = self.line2.text()
+        res = int(val)
+        bus_line = self.find_i2c_line()
+        bus_line_int = int(bus_line)
+        bus = smbus.SMBus(bus_line_int)
+        val = self.count_addr()
+
+        if val == 2:
+            bus_addr_int = 0x50
+        if val == 1:
+            bus_addr = self.find_address()
+            bus_addr_int = int(bus_addr)
+
+        H_Byte = 0x00
+        L_Byte = 0x00
+        bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
+        binary_file = open("image.txt", "w")
+        for i in range(0, res):
+            read = bus.read_byte(bus_addr_int)
+            print(read)
+            read = str(read)
+            binary_file.write(read)
+            time.sleep(0.01)
+        binary_file.close()
+        print("end")
+        self.pbar.setValue(100)
+        print(file)
+        with open('image.txt') as f1, open(file) as f2:
+            for a, b in zip_longest(f1, f2):
+                if a != b:
+                    print('Файлы не равны')
+                    break
 
 # Auto chip
     def c6(self):
@@ -254,6 +291,7 @@ class Example(QWidget):
 
 
     def c7(self):
+        print("!!!")
         global file
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
         if file:

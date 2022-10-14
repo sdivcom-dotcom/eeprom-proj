@@ -41,8 +41,8 @@ for y in range(0, val):
     file.close()
     L_Byte_Data = [address, res]
     print(type(res), type(address))
-    bus.write_i2c_block_data(Dev_Addr, H_Byte, L_Byte_Data)
-    print(address)
+    #bus.write_i2c_block_data(Dev_Addr, H_Byte, L_Byte_Data)
+    #print(address)
     address = address + 1
     time.sleep(0.01)
 
@@ -51,7 +51,11 @@ bus.write_i2c_block_data(Dev_Addr, H_Byte, [L_Byte])
 for i in range(0, 6):
     value = bus.read_byte(Dev_Addr)
     print(value)
-    time.sleep(0.01)
+    #time.sleep(0.01)
 
 
 print("end")
+
+
+
+
