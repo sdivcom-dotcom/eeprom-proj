@@ -1,20 +1,23 @@
+from pathlib import Path
+
 import smbus
 import os
 import subprocess
 import sys
 import time
-from itertools import zip_longest
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QFrame, QApplication, QProgressBar, QMessageBox, QTextBrowser, QFileDialog)
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
-
+from itertools import islice
 command_lsusb = "lsusb | grep 'Silicon Labs CP2112 HID I2C Bridge'"
 command_find_i2c_line  = "i2cdetect -l | grep 'CP2112 SMBus Bridge'"
 command_find_addr = "i2cdetect -y "
 command_find_addr_50 = " | grep '50 -- '"
-command_uptime = "cat /proc/uptime"
-data_00 = 0x00
+command_cat = "cat "
+command_cat_verify = "cat image_verify.txt"
+
+
 
 class Example(QWidget):
 
@@ -275,8 +278,7 @@ class Example(QWidget):
         file = open("image_read.txt", "w")
         for i in range(0, res):
             read = bus.read_byte(bus_addr_int)
-            print(read)
-            read = str(read)
+            read = chr(read)
             file.write(read)
             time.sleep(0.01)
         file.close()
@@ -287,7 +289,6 @@ class Example(QWidget):
     #Verify chip
     def c5(self):
         print("!!!")
-        '''
         val = self.line2.text()
         res = int(val)
         bus_line = self.find_i2c_line()
@@ -307,31 +308,28 @@ class Example(QWidget):
         file_ver = open("image_verify.txt", "w")
         for i in range(0, res):
             read = bus.read_byte(bus_addr_int)
-            print(read)
-            read = str(read)
+            #print(read)
+            read = chr(read)
             file_ver.write(read)
             time.sleep(0.01)
         file_ver.close()
         print("end")
-        self.pbar.setValue(100)
-        ishod_file = open(file, "rb")
-        ishod = list(ishod_file.read(1000))
-        str(ishod)
-        size = len(ishod)
-        print(size)
-        ishod_file.close()
-        test_file = open("image_verify.txt", "rb")
-        test = list(test_file.read(size))
-        print(test)
-        test_file.close()
-        '''
+
+        cat_bin = Path(file).read_bytes()
+        cat_verify = Path('image_verify.txt').read_bytes()
+        cat_verify = cat_verify[:len(cat_bin)]
+        print(cat_bin, cat_verify)
+        if cat_bin == cat_verify:
+            self.pbar.setValue(100)
+        else:
+            self.pbar.setValue(20)
+
 # Auto chip
     def c6(self):
         print("!!!")
 
 
     def c7(self):
-        print("!!!")
         global file
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
         if file:
