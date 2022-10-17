@@ -152,7 +152,6 @@ class Example(QWidget):
             print("Chip not found")
         return court
 
-
 #Discover chip
     def c1(self):
         value = self.lsusb_find()
@@ -188,7 +187,42 @@ class Example(QWidget):
 
         H_Byte = 0x00
         L_Byte = 0x00
-        print(file)
+        address = 0x00
+
+        min = 0
+        max = 1
+
+        file_prog = open(file, "rb")
+        number = list(file_prog.read(1000))
+        str(number)
+        val = len(number)
+        print(val)
+
+        file_prog.close()
+        for y in range(0, val):
+            file_prog = open(file, "rb")
+            number = list(file_prog.read(val))
+            str(number)
+            number = (number[min:max])
+            print(number)
+            list(map(int, number))
+            s = [str(integer) for integer in number]
+            a_string = "".join(s)
+            res = int(a_string)
+            print(res)
+            print(type(res))
+            min = min + 1
+            max = max + 1
+            file_prog.close()
+
+            L_Byte_Data = [address, res]
+            print(type(res), type(address))
+            bus.write_i2c_block_data(bus_addr_int, H_Byte, L_Byte_Data)
+            print(address)
+            address = address + 1
+            time.sleep(0.01)
+        print("end")
+        self.pbar.setValue(100)
 
 
 #Erase chip
@@ -238,20 +272,22 @@ class Example(QWidget):
         H_Byte = 0x00
         L_Byte = 0x00
         bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
-        binary_file = open("image.txt", "w")
+        file = open("image_read.txt", "w")
         for i in range(0, res):
             read = bus.read_byte(bus_addr_int)
             print(read)
             read = str(read)
-            binary_file.write(read)
+            file.write(read)
             time.sleep(0.01)
-        binary_file.close()
+        file.close()
         print("end")
         self.pbar.setValue(100)
 
 
     #Verify chip
     def c5(self):
+        print("!!!")
+        '''
         val = self.line2.text()
         res = int(val)
         bus_line = self.find_i2c_line()
@@ -268,23 +304,27 @@ class Example(QWidget):
         H_Byte = 0x00
         L_Byte = 0x00
         bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
-        binary_file = open("image.txt", "w")
+        file_ver = open("image_verify.txt", "w")
         for i in range(0, res):
             read = bus.read_byte(bus_addr_int)
             print(read)
             read = str(read)
-            binary_file.write(read)
+            file_ver.write(read)
             time.sleep(0.01)
-        binary_file.close()
+        file_ver.close()
         print("end")
         self.pbar.setValue(100)
-        print(file)
-        with open('image.txt') as f1, open(file) as f2:
-            for a, b in zip_longest(f1, f2):
-                if a != b:
-                    print('Файлы не равны')
-                    break
-
+        ishod_file = open(file, "rb")
+        ishod = list(ishod_file.read(1000))
+        str(ishod)
+        size = len(ishod)
+        print(size)
+        ishod_file.close()
+        test_file = open("image_verify.txt", "rb")
+        test = list(test_file.read(size))
+        print(test)
+        test_file.close()
+        '''
 # Auto chip
     def c6(self):
         print("!!!")
