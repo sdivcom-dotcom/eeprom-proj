@@ -6,10 +6,10 @@ import subprocess
 import sys
 import time
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import (QFrame, QApplication, QProgressBar, QMessageBox, QTextBrowser, QFileDialog)
+from PyQt5.QtWidgets import (QApplication, QProgressBar, QFileDialog)
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
-from itertools import islice
+
 command_lsusb = "lsusb | grep 'Silicon Labs CP2112 HID I2C Bridge'"
 command_find_i2c_line  = "i2cdetect -l | grep 'CP2112 SMBus Bridge'"
 command_find_addr = "i2cdetect -y "
@@ -29,52 +29,41 @@ class Example(QWidget):
     def initUI(self):
         self.col = QColor(50, 150, 255)
 
-        b1 = QPushButton('Discover chip', self)
-        b2 = QPushButton('Prog chip', self)
-        b3 = QPushButton('Erase chip', self)
-        b4 = QPushButton('Read chip', self)
-        b5 = QPushButton('Verify chip', self)
-        b6 = QPushButton('Auto chip', self)
-        b7 = QPushButton('Add file', self)
+        discover_button = QPushButton('Discover chip', self)
+        prog_button = QPushButton('Prog chip', self)
+        erase_button = QPushButton('Erase chip', self)
+        read_button = QPushButton('Read chip', self)
+        verify_button = QPushButton('Verify chip', self)
+        auto_button = QPushButton('Auto chip', self)
 
-        b1.move(50, 130)
-        b2.move(50, 170)
-        b3.move(50, 210)
-        b4.move(50, 250)
-        b5.move(50, 290)
-        b6.move(50, 330)
-        b7.move(50, 370)
+        discover_button.move(50, 90)
+        prog_button.move(50, 130)
+        erase_button.move(50, 170)
+        read_button.move(50, 210)
+        verify_button.move(50, 250)
+        auto_button.move(50, 290)
 
-        b1.clicked.connect(self.c1)
-        b2.clicked.connect(self.c2)
-        b3.clicked.connect(self.c3)
-        b4.clicked.connect(self.c4)
-        b5.clicked.connect(self.c5)
-        b6.clicked.connect(self.c6)
-        b7.clicked.connect(self.c7)
+        discover_button.clicked.connect(self.discover_action)
+        prog_button.clicked.connect(self.prog_action)
+        erase_button.clicked.connect(self.erase_action)
+        read_button.clicked.connect(self.read_action)
+        verify_button.clicked.connect(self.verify_action)
+        auto_button.clicked.connect(self.auto_action)
 
-        self.nameLabel1 = QLabel(self)
-        self.nameLabel1.setText('Model chip:')
-        self.line1 = QLineEdit(self)
+        self.nameLabel = QLabel(self)
+        self.nameLabel.setText('Size bytes chip:')
+        self.line = QLineEdit(self)
 
-        self.line1.move(120, 20)
-        self.line1.resize(200, 32)
-        self.nameLabel1.move(10, 25)
-
-        self.nameLabel2 = QLabel(self)
-        self.nameLabel2.setText('Size bytes chip:')
-        self.line2 = QLineEdit(self)
-
-        self.line2.move(120, 70)
-        self.line2.resize(200, 32)
-        self.nameLabel2.move(10, 75)
+        self.line.move(120, 30)
+        self.line.resize(200, 32)
+        self.nameLabel.move(10, 35)
 
         self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(50, 410, 200, 32)
+        self.pbar.setGeometry(50, 340, 200, 32)
         self.pbar.setValue(0)
 
-        self.setGeometry(100, 100, 500, 500)
-        self.setWindowTitle('CP2112 Eeprom prog 0.1 alfa')
+        self.setGeometry(100, 100, 400, 400)
+        self.setWindowTitle('Eeprom prog 0.2 beta')
         self.show()
 
     def lsusb_find(self):
@@ -100,7 +89,6 @@ class Example(QWidget):
         bus_find = self.find_i2c_line()
         bus_find = str(bus_find, encoding="utf-8")
         command_find_address = command_find_addr + bus_find
-        os.system(command_find_address)
         val = subprocess.check_output(command_find_address, shell=True)
         value = str(val, encoding="utf-8")
 
@@ -156,7 +144,7 @@ class Example(QWidget):
         return court
 
 #Discover chip
-    def c1(self):
+    def discover_action(self):
         value = self.lsusb_find()
         if value == 1:
             val = self.find_address()
@@ -174,8 +162,11 @@ class Example(QWidget):
             self.pbar.setValue(0)
 
 #Prog chip
-    def c2(self):
-        val = self.line2.text()
+    def prog_action(self):
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
+        if file:
+            print(file)
+        val = self.line.text()
         res = int(val)
         bus_line = self.find_i2c_line()
         bus_line_int = int(bus_line)
@@ -229,8 +220,8 @@ class Example(QWidget):
 
 
 #Erase chip
-    def c3(self):
-        val = self.line2.text()
+    def erase_action(self):
+        val = self.line.text()
         res = int(val)
         bus_line = self.find_i2c_line()
         bus_line_int = int(bus_line)
@@ -258,8 +249,8 @@ class Example(QWidget):
         self.pbar.setValue(100)
 
 #Read chip
-    def c4(self):
-        val = self.line2.text()
+    def read_action(self):
+        val = self.line.text()
         res = int(val)
         bus_line = self.find_i2c_line()
         bus_line_int = int(bus_line)
@@ -287,9 +278,11 @@ class Example(QWidget):
 
 
     #Verify chip
-    def c5(self):
-        print("!!!")
-        val = self.line2.text()
+    def verify_action(self):
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
+        if file:
+            print(file)
+        val = self.line.text()
         res = int(val)
         bus_line = self.find_i2c_line()
         bus_line_int = int(bus_line)
@@ -325,15 +318,131 @@ class Example(QWidget):
             self.pbar.setValue(20)
 
 # Auto chip
-    def c6(self):
-        print("!!!")
-
-
-    def c7(self):
-        global file
+    def auto_action(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './')
         if file:
             print(file)
+
+        # Erase chip
+        val = self.line.text()
+        res = int(val)
+        bus_line = self.find_i2c_line()
+        bus_line_int = int(bus_line)
+        bus = smbus.SMBus(bus_line_int)
+        val = self.count_addr()
+
+        if val == 2:
+            bus_addr_int = 0x50
+        if val == 1:
+           bus_addr = self.find_address()
+           bus_addr_int = int(bus_addr)
+
+        H_Byte = 0x00
+        L_Byte = 0x00
+        data_00 = 0x00
+        address = 0x00
+        min = 0
+        max = 1
+
+        for y in range(0, res):
+            L_Byte_Data = [address, data_00]
+            bus.write_i2c_block_data(bus_addr_int, H_Byte, L_Byte_Data)
+            print(address)
+            address = address + 1
+            time.sleep(0.01)
+        print("Erase Chip")
+
+        # Prog chip
+        val = self.line.text()
+        res = int(val)
+        bus_line = self.find_i2c_line()
+        bus_line_int = int(bus_line)
+        bus = smbus.SMBus(bus_line_int)
+        val = self.count_addr()
+
+        if val == 2:
+            bus_addr_int = 0x50
+        if val == 1:
+            bus_addr = self.find_address()
+            bus_addr_int = int(bus_addr)
+
+        file_prog = open(file, "rb")
+        number = list(file_prog.read(1000))
+        str(number)
+        val = len(number)
+        print(val)
+
+        file_prog.close()
+        for y in range(0, val):
+            file_prog = open(file, "rb")
+            number = list(file_prog.read(val))
+            str(number)
+            number = (number[min:max])
+            print(number)
+            list(map(int, number))
+            s = [str(integer) for integer in number]
+            a_string = "".join(s)
+            res = int(a_string)
+            print(res)
+            print(type(res))
+            min = min + 1
+            max = max + 1
+            file_prog.close()
+
+            L_Byte_Data = [address, res]
+            print(type(res), type(address))
+            bus.write_i2c_block_data(bus_addr_int, H_Byte, L_Byte_Data)
+            print(address)
+            address = address + 1
+            time.sleep(0.01)
+        print("Prog Chip")
+
+        # Verify chip
+        val = self.line.text()
+        res = int(val)
+        bus_line = self.find_i2c_line()
+        bus_line_int = int(bus_line)
+        bus = smbus.SMBus(bus_line_int)
+        val = self.count_addr()
+
+        if val == 2:
+            bus_addr_int = 0x50
+        if val == 1:
+            bus_addr = self.find_address()
+            bus_addr_int = int(bus_addr)
+
+        H_Byte = 0x00
+        L_Byte = 0x00
+        bus.write_i2c_block_data(bus_addr_int, H_Byte, [L_Byte])
+        file_ver = open("image_verify.txt", "w")
+        for i in range(0, res):
+            read = bus.read_byte(bus_addr_int)
+            #print(read)
+            read = chr(read)
+            file_ver.write(read)
+            time.sleep(0.01)
+        file_ver.close()
+        print("end")
+
+        cat_bin = Path(file).read_bytes()
+        cat_verify = Path('image_verify.txt').read_bytes()
+        cat_verify = cat_verify[:len(cat_bin)]
+        print(cat_bin, cat_verify)
+        if cat_bin == cat_verify:
+            self.pbar.setValue(100)
+            print("Verify Chip")
+            print("Done !!!!!!!!!!!!1")
+        else:
+            self.pbar.setValue(20)
+            print("Verify Chip ERROR!!!")
+
+
+
+
+
+
+
+
 
 def main():
     app = QApplication(sys.argv)
