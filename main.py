@@ -437,13 +437,6 @@ class Example(QWidget):
             print("Verify Chip ERROR!!!")
 
 
-
-
-
-
-
-
-
 def main():
     app = QApplication(sys.argv)
     ex = Example()
