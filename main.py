@@ -431,7 +431,7 @@ class Example(QWidget):
         if cat_bin == cat_verify:
             self.pbar.setValue(100)
             print("Verify Chip")
-            print("Done !!!!!!!!!!!!1")
+            print("Done !!!!!!!!!!!!")
         else:
             self.pbar.setValue(20)
             print("Verify Chip ERROR!!!")
