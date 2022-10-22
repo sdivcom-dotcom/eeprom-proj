@@ -11,7 +11,7 @@ sudo apt install -y python3-pip
 sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
 sudo apt install -y python3-venv
 sudo apt install i2c-tools
-sudo pip3 install PyQt5
+sudo pip install PyQt5
 sudo pip install smbus
 ```
 Use sudo python3 main.py to run the command, because to work with i2c you need to run commands from sudo
