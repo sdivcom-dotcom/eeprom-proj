@@ -119,7 +119,7 @@ class Example(QWidget):
         command_find_50_addr = command_find_addr + bus_find_50 + command_find_addr_50
         val = os.system(command_find_50_addr)
         if val == 0:
-            value = subprocess.check_output(command_find_50_addr, shell=True)
+            #value = subprocess.check_output(command_find_50_addr, shell=True)
             address = 50
         else:
             address = 00
